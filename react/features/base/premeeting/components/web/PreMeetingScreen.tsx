@@ -184,6 +184,8 @@ const PreMeetingScreen = ({
         <div className = { clsx('premeeting-screen', classes.container, className) }>
             {/*
             !!! THIS IS NEEDED ONLY FOR LOCAL DEVELOPMENT BUILDFAST APP!!!
+            */}
+            {/*
             <div style = { style }>
                 <div className = { classes.content }>
                     <ConnectionStatus />

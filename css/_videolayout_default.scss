@@ -144,6 +144,10 @@
     pointer-events: none;
 }
 
+#sharedVideo {
+    transition: width .3s ease-in-out, height .3s ease-in-out;
+}
+
 #sharedVideo,
 #etherpad,
 #localVideoWrapper video,
