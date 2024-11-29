@@ -109,7 +109,7 @@ local function async_http_request(url, options, callback, timeout_callback, retr
                 return;
             end
 
-            module:log("debug", "%s %s returned code %s", options.method, url, response_code);
+            module:log("info", "%s %s returned code %s", options.method, url, response_code);
 
             if callback then
                 callback(response_body, response_code)
@@ -161,9 +161,8 @@ function occupant_joined(event)
   
   local occupant_node = jid.node(occupant.jid);
   if occupant_node == 'recorder' then
-    local tenant = getTenantFromRoomName(room.jid);
     local roomname = jid.node(room.jid);    
-    local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..tenant..'.'..api_domain..api_path..'/recording-started/'..roomname;
+    local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..api_domain..api_path..'/recording-started/'..roomname;
 
     module:log("info", "POST URL - %s", URL_EVENT_OCCUPANT_JOINED);
     
@@ -187,9 +186,8 @@ function occupant_left(event)
     
     local occupant_node = jid.node(occupant.jid);
     if occupant_node == 'recorder' then
-      local tenant = getTenantFromRoomName(room.jid);
       local roomname = jid.node(room.jid);
-      local URL_EVENT_OCCUPANT_LEFT = api_protocol..'://'..tenant..'.'..api_domain..api_path..'/recording-stopped/'..roomname;
+      local URL_EVENT_OCCUPANT_LEFT = api_protocol..'://'..api_domain..api_path..'/recording-stopped/'..roomname;
       
       module:log("info", "POST URL - %s", URL_EVENT_OCCUPANT_LEFT);
 

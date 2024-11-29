@@ -72,10 +72,6 @@ local function getTenantFromRoomName(roomjid)
     local pos = string.find(roomjid, '@');
     if pos > 0 then
         local roomname = string.sub(roomjid, 1, pos - 1);
-        if string.len(roomname) > 32 then
-            local tenant = string.sub(roomname, 33);
-            return tenant;
-        end
     else
         return nil;
     end
@@ -162,11 +158,10 @@ function occupant_joined(event)
   local occupant_jid = occupant.jid
   if occupant_node == 'jigasi' then
     local nick = occupant:get_presence():get_child_text('nick', 'http://jabber.org/protocol/nick');
-    local tenant = getTenantFromRoomName(room.jid);
     local roomname = jid.node(room.jid);
     local occupant_id = string.match(occupant_jid, "/(.*)")
     if nick == 'Transcriber' then
-        local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..tenant..'.'..api_domain..api_path..'/transcription-started/'..roomname;
+        local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..api_domain..api_path..'/transcription-started/'..roomname;
    
         module:log("info", "POST URL - %s", URL_EVENT_OCCUPANT_JOINED);
         
@@ -180,7 +175,7 @@ function occupant_joined(event)
         })
         module:log("info", "user - %s ", nick);
     else
-        local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..tenant..'.'..api_domain..api_path..'/sip-user-join/'..roomname;
+        local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..api_domain..api_path..'/sip-user-join/'..roomname;
         module:log("info", "POST URL - %s", URL_EVENT_OCCUPANT_JOINED);
 
         async_http_request(URL_EVENT_OCCUPANT_JOINED, {
@@ -211,11 +206,10 @@ function occupant_left(event)
     local occupant_node = jid.node(occupant.jid);
     if occupant_node == 'jigasi' then
       local nick = occupant:get_presence():get_child_text('nick', 'http://jabber.org/protocol/nick');
-      local tenant = getTenantFromRoomName(room.jid);
       local roomname = jid.node(room.jid);
       local occupant_jid = occupant.jid;
       local occupant_id = string.match(occupant_jid, "/(.*)");
-      local URL_EVENT_OCCUPANT_LEFT = api_protocol..'://'..tenant..'.'..api_domain..api_path..'/sip-user-left/'..roomname;
+      local URL_EVENT_OCCUPANT_LEFT = api_protocol..'://'..api_domain..api_path..'/sip-user-left/'..roomname;
       if nick ~= 'Transcriber' then
         module:log("info", "POST URL - %s", URL_EVENT_OCCUPANT_LEFT);
 

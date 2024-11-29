@@ -55,12 +55,9 @@ local function getPostRequestUrl(roomjid)
         local pos = string.find(roomjid, '@');
         if pos > 0 then
             local roomname = string.sub(roomjid, 1, pos - 1);
-            if string.len(roomname) > 32 then
-                local tenant = string.sub(roomname, 33);
-                local requestURL = api_protocol..'://'..tenant..'.'..api_domain..api_path;
-                return requestURL;
-            end
-        else
+            local requestURL = api_protocol..'://'..api_domain..api_path;
+            return requestURL;
+         else
             return nil;
         end
     else

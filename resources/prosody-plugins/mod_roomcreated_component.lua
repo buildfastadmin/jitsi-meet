@@ -144,9 +144,8 @@ function is_system_event(event)
 end
 function room_created(event)
     local room = event.room;
-    local tenant = getTenantFromRoomName(room.jid);
     local roomname = jid.node(room.jid);
-    local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..tenant..'.'..api_domain..api_path..'/started/'..roomname;
+    local URL_EVENT_OCCUPANT_JOINED = api_protocol..'://'..api_domain..api_path..'/started/'..roomname;
     module:log("info", "POST URL - %s", URL_EVENT_OCCUPANT_JOINED);
     
     async_http_request(URL_EVENT_OCCUPANT_JOINED, {
