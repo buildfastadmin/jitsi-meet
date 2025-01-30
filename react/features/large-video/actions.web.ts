@@ -19,6 +19,8 @@ export function captureLargeVideoScreenshot() {
         const largeVideo = state['features/large-video'];
         const promise = Promise.resolve();
 
+        console.log('captureLargeVideoScreenshot', largeVideo);
+
         if (!largeVideo?.participantId) {
             return promise;
         }
@@ -32,6 +34,8 @@ export function captureLargeVideoScreenshot() {
         }
         const videoStream = participantTrack.jitsiTrack.getOriginalStream();
 
+        console.log('videoStream', videoStream);
+
         if (!videoStream) {
             return promise;
         }
@@ -39,6 +43,8 @@ export function captureLargeVideoScreenshot() {
         // Get the video element for the large video, cast HTMLElement to HTMLVideoElement to make flow happy.
         /* eslint-disable-next-line no-extra-parens*/
         const videoElement = (document.getElementById('largeVideo') as any);
+
+        console.log('videoElement', videoElement);
 
         if (!videoElement) {
             return promise;
