@@ -8,6 +8,9 @@ import { SET_SEE_WHAT_IS_BEING_SHARED } from './actionTypes';
 
 export * from './actions.any';
 
+import logger from './logger';
+
+
 /**
 * Captures a screenshot of the video displayed on the large video.
 *
@@ -19,7 +22,7 @@ export function captureLargeVideoScreenshot() {
         const largeVideo = state['features/large-video'];
         const promise = Promise.resolve();
 
-        console.log('captureLargeVideoScreenshot', largeVideo);
+        logger.log('captureLargeVideoScreenshot', largeVideo);
 
         if (!largeVideo?.participantId) {
             return promise;
@@ -34,7 +37,7 @@ export function captureLargeVideoScreenshot() {
         }
         const videoStream = participantTrack.jitsiTrack.getOriginalStream();
 
-        console.log('videoStream', videoStream);
+        logger.log('videoStream', !videoStream);
 
         if (!videoStream) {
             return promise;
@@ -44,7 +47,7 @@ export function captureLargeVideoScreenshot() {
         /* eslint-disable-next-line no-extra-parens*/
         const videoElement = (document.getElementById('largeVideo') as any);
 
-        console.log('videoElement', videoElement);
+        logger.log('videoElement', videoElement);
 
         if (!videoElement) {
             return promise;
@@ -53,6 +56,7 @@ export function captureLargeVideoScreenshot() {
         // Create a HTML canvas and draw video on to the canvas.
         const [ track ] = videoStream.getVideoTracks();
         const { height, width } = track.getSettings() ?? track.getConstraints();
+        logger.log('width, height', width, height);
         const canvasElement = document.createElement('canvas');
         const ctx = canvasElement.getContext('2d');
 
