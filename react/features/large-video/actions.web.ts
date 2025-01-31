@@ -18,6 +18,7 @@ import logger from './logger';
 */
 export function captureLargeVideoScreenshot() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        console.log('captureLargeVideoScreenshot *************************************');
         const state = getState();
         const largeVideo = state['features/large-video'];
         const promise = Promise.resolve();
