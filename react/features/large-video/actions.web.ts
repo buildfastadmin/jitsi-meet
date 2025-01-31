@@ -18,56 +18,82 @@ import logger from './logger';
 */
 export function captureLargeVideoScreenshot() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        console.log('captureLargeVideoScreenshot *************************************');
         const state = getState();
         const largeVideo = state['features/large-video'];
         const promise = Promise.resolve();
 
-        logger.log('captureLargeVideoScreenshot', largeVideo);
+        // Default fallback values
+        let videoElement: any;
+        let maxWidth = 1920;
+        let maxHeight = 1080;
 
-        if (!largeVideo?.participantId) {
-            return promise;
+        if (largeVideo?.participantId) {
+            const participant = getParticipantById(state, largeVideo.participantId);
+            const participantTrack = getVideoTrackByParticipant(state, participant);
+
+            if (participantTrack?.jitsiTrack) {
+                const videoStream = participantTrack.jitsiTrack.getOriginalStream();
+
+                if (videoStream) {
+                    const [ track ] = videoStream.getVideoTracks();
+                    const settings = track.getSettings() ?? track.getConstraints();
+
+                    if (settings) {
+                        maxWidth = parseInt(settings.width as string, 10) || maxWidth;
+                        maxHeight = parseInt(settings.height as string, 10) || maxHeight;
+                    }
+                }
+            }
+
+            // Try to get video element first, fall back to wrapper if no video
+            videoElement = document.getElementById('largeVideo');
+            if (!videoElement?.videoWidth) {
+                videoElement = document.getElementById('largeVideoWrapper');
+            }
+        } else {
+            videoElement = document.getElementById('largeVideoWrapper');
         }
-
-        const participant = getParticipantById(state, largeVideo.participantId);
-        const participantTrack = getVideoTrackByParticipant(state, participant);
-
-        // Participants that join the call video muted do not have a jitsiTrack attached.
-        if (!participantTrack?.jitsiTrack) {
-            return promise;
-        }
-        const videoStream = participantTrack.jitsiTrack.getOriginalStream();
-
-        logger.log('videoStream', !videoStream);
-
-        if (!videoStream) {
-            return promise;
-        }
-
-        // Get the video element for the large video, cast HTMLElement to HTMLVideoElement to make flow happy.
-        /* eslint-disable-next-line no-extra-parens*/
-        const videoElement = (document.getElementById('largeVideo') as any);
-
-        logger.log('videoElement', videoElement);
 
         if (!videoElement) {
             return promise;
         }
 
-        // Create a HTML canvas and draw video on to the canvas.
-        const [ track ] = videoStream.getVideoTracks();
-        const { height, width } = track.getSettings() ?? track.getConstraints();
-        logger.log('width, height', width, height);
+        // Calculate dimensions that preserve aspect ratio
+        const elementWidth = 'videoWidth' in videoElement && videoElement.videoWidth
+            ? videoElement.videoWidth
+            : videoElement.clientWidth;
+        const elementHeight = 'videoHeight' in videoElement && videoElement.videoHeight
+            ? videoElement.videoHeight
+            : videoElement.clientHeight;
+
+        const aspectRatio = elementWidth / elementHeight;
+
+        // Calculate target dimensions while preserving aspect ratio
+        let width = maxWidth;
+        let height = maxHeight;
+
+        if (width / height > aspectRatio) {
+            width = Math.floor(height * aspectRatio);
+        } else {
+            height = Math.floor(width / aspectRatio);
+        }
+
+        // Create a HTML canvas and draw video on to the canvas
         const canvasElement = document.createElement('canvas');
         const ctx = canvasElement.getContext('2d');
 
         canvasElement.style.display = 'none';
-        canvasElement.height = parseInt(height, 10);
-        canvasElement.width = parseInt(width, 10);
-        ctx?.drawImage(videoElement, 0, 0);
+        canvasElement.height = height;
+        canvasElement.width = width;
+
+        // Calculate positioning to center the video
+        const x = (canvasElement.width - width) / 2;
+        const y = (canvasElement.height - height) / 2;
+
+        ctx?.drawImage(videoElement, x, y, width, height);
         const dataURL = canvasElement.toDataURL('image/png', 1.0);
 
-        // Cleanup.
+        // Cleanup
         ctx?.clearRect(0, 0, canvasElement.width, canvasElement.height);
         canvasElement.remove();
 
