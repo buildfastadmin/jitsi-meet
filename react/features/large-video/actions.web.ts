@@ -18,12 +18,9 @@ import logger from './logger';
 */
 export function captureLargeVideoScreenshot() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        console.log('captureLargeVideoScreenshot *************************************');
         const state = getState();
         const largeVideo = state['features/large-video'];
         const promise = Promise.resolve();
-
-        logger.log('captureLargeVideoScreenshot', largeVideo);
 
         if (!largeVideo?.participantId) {
             return promise;
@@ -34,11 +31,64 @@ export function captureLargeVideoScreenshot() {
 
         // Participants that join the call video muted do not have a jitsiTrack attached.
         if (!participantTrack?.jitsiTrack) {
-            return promise;
-        }
-        const videoStream = participantTrack.jitsiTrack.getOriginalStream();
+            const avatarElement = document.getElementById('dominantSpeakerAvatarContainer');
 
-        logger.log('videoStream', !videoStream);
+            if (!avatarElement) {
+                return promise;
+            }
+
+            // Create canvas with dark background
+            const canvasElement = document.createElement('canvas');
+            const ctx = canvasElement.getContext('2d');
+
+            canvasElement.width = 1920;
+            canvasElement.height = 1080;
+
+            // Fill background
+            if (ctx) {
+                ctx.fillStyle = 'rgb(4, 4, 4)';
+                ctx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+
+                // Center the avatar div in the canvas
+                const avatarDiv = document.getElementById('dominantSpeakerAvatar') as HTMLElement;
+
+                if (avatarDiv) {
+                    const centerX = canvasElement.width / 2; // 960
+                    const centerY = canvasElement.height / 2; // 540
+                    const radius = 100; // 200px diameter
+
+                    // Draw avatar circle background
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                    ctx.fillStyle = avatarDiv.style.background;
+                    ctx.fill();
+
+                    // Draw initials
+                    const initialsDiv = document.getElementById('bf-avatar-initials') as HTMLElement;
+
+                    if (initialsDiv) {
+                        const computedStyle = window.getComputedStyle(initialsDiv);
+
+                        ctx.fillStyle = computedStyle.color;
+                        ctx.font = `${computedStyle.fontWeight} ${computedStyle.fontSize} ${computedStyle.fontFamily}`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(initialsDiv.textContent || '',
+                            canvasElement.width / 2,
+                            canvasElement.height / 2
+                        );
+                    }
+                }
+            }
+
+            const dataURL = canvasElement.toDataURL('image/png', 1.0);
+
+            canvasElement.remove();
+
+            return Promise.resolve(dataURL);
+        }
+
+        const videoStream = participantTrack.jitsiTrack.getOriginalStream();
 
         if (!videoStream) {
             return promise;
@@ -48,8 +98,6 @@ export function captureLargeVideoScreenshot() {
         /* eslint-disable-next-line no-extra-parens*/
         const videoElement = (document.getElementById('largeVideo') as any);
 
-        logger.log('videoElement', videoElement);
-
         if (!videoElement) {
             return promise;
         }
@@ -57,7 +105,6 @@ export function captureLargeVideoScreenshot() {
         // Create a HTML canvas and draw video on to the canvas.
         const [ track ] = videoStream.getVideoTracks();
         const { height, width } = track.getSettings() ?? track.getConstraints();
-        logger.log('width, height', width, height);
         const canvasElement = document.createElement('canvas');
         const ctx = canvasElement.getContext('2d');
 

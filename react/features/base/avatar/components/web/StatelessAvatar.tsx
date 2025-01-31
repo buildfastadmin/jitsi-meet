@@ -196,7 +196,9 @@ const StatelessAvatar = ({
                 data-testid = { testId }
                 id = { id }
                 style = { _getAvatarStyle(color) }>
-                <div className = { classes.initialsContainer }>
+                <div
+                    className = { classes.initialsContainer }
+                    id = 'bf-avatar-initials'>
                     {initials}
                 </div>
             </div>
